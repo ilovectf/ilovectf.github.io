@@ -29,9 +29,6 @@ github_username:  ilovectf
 
 # Build settings
 theme: minima
-plugins:
-  - jekyll-feed
-
 
 # Google analytics
 google_analytics: UA-162114378-1
