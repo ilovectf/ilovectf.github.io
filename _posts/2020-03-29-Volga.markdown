@@ -1,0 +1,95 @@
+---
+layout: post
+title:  "Volga CTF 2020"
+categories: jekyll update
+---
+My ranking is 216/1250. I got 350 points and played by myself. I spent 6ish hours. I didn't do as good as good as I hoped. I wish myself better luck next weekend.
+
+1. Excellent Crackme (150 points)
+{:toc}
+
+# Excellent Crackme (150 points)
+
+In this reversing challenge, we are given an [excel file](/assets/volga/VolgaCTF_excel_crackme.xlsm). You will be greeted with a crackme in Excel, which looks like
+![crackme](/assets/volga/crackme.png)
+
+After typing in something in the box and clicking `Check flag`, the Excel doc will determine whether your input is correct via a macro. A macro is a VBA (Visual Basic for Applications) script that automates tasks such as checking mouse clicks or key presses.
+
+To access the macro, modify the excel file extension to a zip and unzip it. Look for a file called `vbaProject.bin`.
+![steps](/assets/volga/steps.png)
+
+Next, I decompiled the VBA binary with [pcode2code](https://pypi.org/project/pcode2code/), running
+`pcode2code vbaProject.bin -o decompile`.
+
+I filtered out code that didn't matter and modified a few things to make it more readable:
+{% highlight vb %}
+Private Sub VolgaCTF()
+  Dim K6Jq6qvy As String
+  Dim fpqigdwkxf As Long
+  Dim hiedpuxyvs As Long
+  Dim CLAO4r As Long
+  K6Jq6qvy = "L15"
+  For vbrexxoiuk = 1 To Len(K6Jq6qvy)
+    fpqigdwkxf = 0
+    For hbzugliakq = 1 To Len(K6Jq6qvy)
+      hiedpuxyvs = CInt(Cells(99 + vbrexxoiuk, 99 + hbzugliakq).Value)
+      rJ1UnHB = Mid(K6Jq6qvy, hbzugliakq, 1)
+      fpqigdwkxf = fpqigdwkxf + hiedpuxyvs * Asc(rJ1UnHB)
+    Next hbzugliakq
+    CLAO4r = CLng(Cells(99 + vbrexxoiuk, 99 + Len(K6Jq6qvy) + 1).Value)
+    If (CLAO4r <> fpqigdwkxf) Then
+      MsgBox "bad"
+      Exit Sub
+    End If
+  Next vbrexxoiuk
+  MsgBox "good"
+End Sub
+{% endhighlight %}
+
+It still wasn't that readable to me so I converted it into my own Python psuedocode:
+{% highlight python %}
+for x in range(1, len(guess)):
+    f = 0
+    for i in range(1, len(guess)):
+        h = cell[99 + x:99 + i]
+        r = guess[i]
+        f += h * ord(r)
+    c = cell[99 + x: 99 + len(guess) + 1]
+    if c != f:
+        print('bad')
+{% endhighlight %}
+
+I visualized this in my head and noticed that `Row(h) * Col(r) = c` where h, r, and c are of length guessed flag. This is equivalent to a simple matrix multiplication problem. So I wrote my code to solve it.
+
+[solve.py](/assets/volga/solve.py)
+{% highlight python %}
+import xlrd
+import numpy as np
+
+workbook = xlrd.open_workbook('VolgaCTF_excel_crackme.xlsm')
+worksheet = workbook.sheet_by_name('Лист1')
+
+for length in range(10, 50): # Guessing flag length
+    A = []
+    C = []
+
+    for i in range(length):
+        a = []
+        for j in range(length):
+            a.append(int(worksheet.cell(99 + i, 99 + j).value))
+        A.append(a)
+        C.append([int(worksheet.cell(99 + i, 99 + length).value)])
+
+    # Our goal is to solve for B when we know that A * B = C
+    # A^-1 * A * B = A^-1 * C
+    # Therefore, B = A^-1 * C
+    A = np.array(A)
+    C = np.array(C)
+    B = np.linalg.inv(A).dot(C)
+    B = [int(round(e)) for b in B.tolist() for e in b]
+    if B[0] == 86: # equal to 'V', first letter of 'VolgaCTF{}'
+        print(''.join(chr(e) for e in B))
+        break
+{% endhighlight %}
+
+The flag is `VolgaCTF{7h3_M057_M47h_cr4ckM3_y0u_3V3R_533N}`.
