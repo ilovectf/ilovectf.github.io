@@ -1,0 +1,103 @@
+---
+layout: post
+title:  "De1 CTF 2020"
+categories: ADS
+---
+I got 212 points and played by myself, achieving a ranking of 202/755. It's sad to admit, but I spent 12ish hours. I didn't do good, only solving one real problem. It's possible that I could have solved nothing for this event so I am still thankful. Looking forward to the writeups for "check in" and "NLFSR".
+
+1. Misc Chowder (97 points)
+{:toc}
+
+# Misc Chowder (97 points)
+
+The challenge is a singular [pcap file](/assets/de1/Misc_Chowder.pcap). There were also two hints: first to ignore connections to other sites in the pcap, and that when a password is needed, its length is 6 and that its first two letters are DE. Captured file contents commonly exist in pcap files (because they are network logs after all), so I checked whether this was the case via the Export Objects utility.
+
+![export](/assets/de1/export.png)
+
+
+No surprise. There's a lot of files. In particular, what users submit in forms is interesting, so let's have a look.
+
+![images](/assets/de1/images.png)
+
+
+I saved each form submission. One of the saved form requests from WireShark was a submission of a png file. I deleted the first and last few lines of the file to rid the request headers, and saved the file as a png file. The result was a picture of a Google Drive link. Why not just submit the link? XD
+
+![7.png](/assets/de1/7.png)
+
+
+I downloaded the zip file at the link address, and used binwalk (syntax: binwalk -Me file) to extract useful files from the doc file. Binwalk found an interesting zip file which requires a password. The rest of the files were normal files/directories when unzipping Microsoft Docs. I followed the exact directions in the second hint to obtain the password, DE34Q1.
+
+```console
+hacker@kali:~/Desktop$ zip2john You_found_me_Orz.zip > Orz.hash
+ver 2.0 efh 9901 You_found_me_Orz.zip/You_found_me_Orz.jpg PKZIP Encr: cmplen=25879, decmplen=28564, crc=20EF0FAF
+hacker@kali:~/Desktop$ john --mask=DE?1?1?1?1 -1=[A-Za-z0-9] -min-len=6 -max-len=6 Orz.hash
+Using default input encoding: UTF-8
+Loaded 1 password hash (ZIP, WinZip [PBKDF2-SHA1 256/256 AVX2 8x])
+No password hashes left to crack (see FAQ)
+hacker@kali:~/Desktop$ john --show Orz.hash 
+You_found_me_Orz.zip/You_found_me_Orz.jpg:DE34Q1:You_found_me_Orz.jpg:You_found_me_Orz.zip:You_found_me_Orz.zip
+
+1 password hash cracked, 0 left
+hacker@kali:~/Desktop$ 7z e You_found_me_Orz.zip 
+
+7-Zip [64] 16.02 : Copyright (c) 1999-2016 Igor Pavlov : 2016-05-21
+p7zip Version 16.02 (locale=en_US.utf8,Utf16=on,HugeFiles=on,64 bits,1 CPU Intel(R) Core(TM) i7-8565U CPU @ 1.80GHz (806EB),ASM,AES-NI)
+
+Scanning the drive for archives:
+1 file, 26091 bytes (26 KiB)
+
+Extracting archive: You_found_me_Orz.zip
+--
+Path = You_found_me_Orz.zip
+Type = zip
+Physical Size = 26091
+
+    
+Enter password (will not be echoed):
+Everything is Ok           
+
+Size:       28564
+Compressed: 26091
+```
+
+
+Out comes a singular jpg file, You_found_me_Orz.jpg. Binwalking it again, I got trolled by a fake flag.
+
+```console
+hacker@kali:~/Desktop/_You_found_me_Orz.jpg.extracted$ ls -la
+total 28
+drwxr-xr-x 3 hacker hacker 4096 May  3 23:01 .
+drwxr-xr-x 3 hacker hacker 4096 May  3 23:01 ..
+-rw-r--r-- 1 hacker hacker   36 Apr 25 10:07 123.txt
+-rw-r--r-- 1 hacker hacker 2366 Apr 25 10:06 666.jpg
+drwxr-xr-x 2 hacker hacker 4096 May  3 23:01 _666.jpg.extracted
+-rw-r--r-- 1 hacker hacker 2233 May  3 23:01 66DB.rar
+-rw-r--r-- 1 hacker hacker   44 Apr 25 10:06 flag.txt
+hacker@kali:~/Desktop/_You_found_me_Orz.jpg.extracted$ cat flag.txt
+De1CTF{jaivy say that you almost get me!!! }
+hacker@kali:~/Desktop/_You_found_me_Orz.jpg.extracted$ cat 123.txt
+this is a 123.txt file from jaivy!
+```
+
+
+The only reasonable last vector to attack was the rar file. Binwalk already extracted the contents of it (123.txt, 666.jpg, and flag.txt), but let's have another look at it with strings.
+
+```console
+hacker@kali:~/Desktop/_You_found_me_Orz.jpg.extracted$ strings -n 7 66DB.rar 
+123.txt
+this is a 123.txt file from jaivy!
+flag.txt
+De1CTF{jaivy say that you almost get me!!! }5
+666.jpg
+:fffffffflllll.txt
+```
+
+
+There is a fffffffflllll.txt that was not extracted. What in the world? It will be a real pain in the ass to fix a corrupted rar file by hand. Viewing 66DB.rar in a hexeditor for a close scrutinization (syntax: xxd 66DB.rar), I notice an STM header nearby fffffffflllll.txt.
+
+![hexdump](/assets/de1/hexdump.jpg)
+
+
+Googling STM RAR, I read some [documentation](https://www.rarlab.com/technote.htm), which said that STM was the service header of the NTFS alternate data stream. ADS is a way of hiding files, and I imagine it as putting a file in a different "git branch" which does not exist in your branch. It's quite uncommon so "ls -la" or "dir /r" will not discover it. I luckily have a Windows host machine, and detecting ADS is simple with PowerShell. I first used Streams from Sysinternals to get the stream name, and then used Get-Content to show the contents of the stream.
+
+![flag](/assets/de1/flag.png)

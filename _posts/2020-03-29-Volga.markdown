@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Volga CTF 2020"
-categories: jekyll update
+categories: re vba
 ---
 My ranking is 216/1250. I got 350 points and played by myself. I spent 6ish hours. I didn't do as good as good as I hoped. I wish myself better luck next weekend.
 
