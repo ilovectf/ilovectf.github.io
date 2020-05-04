@@ -61,7 +61,7 @@ Compressed: 26091
 ```
 
 
-Out comes a singular jpg file, You_found_me_Orz.jpg. Binwalking it again, I got trolled by a fake flag.
+Out comes a singular jpg file, You_found_me_Orz.jpg. I binwalked it again, and got trolled by a fake flag.
 
 ```console
 hacker@kali:~/Desktop/_You_found_me_Orz.jpg.extracted$ ls -la
@@ -80,7 +80,7 @@ this is a 123.txt file from jaivy!
 ```
 
 
-The only reasonable last vector to attack was the rar file. Binwalk already extracted the contents of it (123.txt, 666.jpg, and flag.txt), but let's have another look at it with strings.
+The only reasonable vector left to attack was the rar file. Binwalk already extracted the contents of it (123.txt, 666.jpg, and flag.txt), but let's have another look at it with strings.
 
 ```console
 hacker@kali:~/Desktop/_You_found_me_Orz.jpg.extracted$ strings -n 7 66DB.rar 
@@ -98,6 +98,6 @@ There is a fffffffflllll.txt that was not extracted. What in the world? It will 
 ![hexdump](/assets/de1/hexdump.jpg)
 
 
-Googling STM RAR, I read some [documentation](https://www.rarlab.com/technote.htm), which said that STM was the service header of the NTFS alternate data stream. ADS is a way of hiding files, and I imagine it as putting a file in a different "git branch" which does not exist in your branch. It's quite uncommon so "ls -la" or "dir /r" will not discover it. I luckily have a Windows host machine, and detecting ADS is simple with PowerShell. I first used Streams from Sysinternals to get the stream name, and then used Get-Content to show the contents of the stream.
+Googling STM RAR, I read some [documentation](https://www.rarlab.com/technote.htm) that said that STM was the service header of the NTFS alternate data stream. ADS is a way of hiding files, and it's like putting a file in a different "git branch" which currently doesn't appear in your branch. Apparently, "dir /r", the "ls -la" of Linux in cmd, should also discover it. I have a Windows host machine, and from Google, detecting ADS is simple with PowerShell. I first used Streams from Sysinternals to get the stream name, and then used Get-Content to show the contents of the stream.
 
 ![flag](/assets/de1/flag.png)
