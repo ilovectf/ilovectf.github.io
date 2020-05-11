@@ -93,7 +93,7 @@ De1CTF{jaivy say that you almost get me!!! }5
 ```
 
 
-There is a fffffffflllll.txt that was not extracted. What in the world? It will be a real pain in the ass to fix a corrupted rar file by hand. Viewing 66DB.rar in a hexeditor for a close scrutinization (syntax: xxd 66DB.rar), I notice an STM header nearby fffffffflllll.txt.
+There is a fffffffflllll.txt that was not extracted. What in the world? It would be a real pain in the ass to fix a corrupted rar file by hand. Viewing 66DB.rar in a hexeditor for a close scrutinization (syntax: xxd 66DB.rar), I notice an STM header nearby fffffffflllll.txt.
 
 ![hexdump](/assets/de1/hexdump.jpg)
 
