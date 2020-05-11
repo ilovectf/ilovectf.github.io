@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "SpamAndFlags 2020"
+title:  "SpamAndFlags CTF 2020"
 categories: quantum-computing shors-algorithm
 ---
 I played by myself, and only got the Sanity Check during the competition. I spent at least 3 hours trying my hardest. I couldn't do any worse than this haha.
