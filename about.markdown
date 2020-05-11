@@ -4,4 +4,4 @@ title: About
 permalink: /about/
 ---
 
-I'm a normal university student. Although I'm not good at CTFs, I can solve easier challenges and want to help those who can't do the challenges I can. If you're wondering how I made this site, I followed the tutorial on [jekyllrb.com](https://jekyllrb.com/).
+I'm a university student who wants to improve at CTF. I want to be an Avatar--master of all four elements: web, crypto, pwn, and reverse! An avatar must also be a great teacher, so I take extra care to make my solutions as clear as possible.

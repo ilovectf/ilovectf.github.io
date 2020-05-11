@@ -1,0 +1,9 @@
+---
+layout: post
+title:  "Progress"
+categories:
+---
+I'm not improving at CTF, so I'm tracking my progress.
+
+Activity | Time | Date | Learned
+Nightmare 2.1, 3.1 | 1.5 hours | May 11 | Reading disassembly, format string
